@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList } from 'react-native';
-import styles from './styles';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  TextInput, 
+  SafeAreaView, 
+  StatusBar 
+} from 'react-native';
 
-// Hardcoded contacts
+// Starter Data
 const contacts = [
   { id: '1', name: 'Alice Johnson', phone: '555-0101' },
   { id: '2', name: 'Bob Martinez', phone: '555-0102' },
@@ -15,51 +22,135 @@ const contacts = [
 ];
 
 export default function App() {
-  // Search text state
+  // 1. State for the search query
   const [query, setQuery] = useState('');
 
-  // Filter contacts
+  // 2. Logic: Filter contacts based on the search query (case-insensitive)
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(query.toLowerCase())
   );
 
-  // Display each row
-  const renderItem = ({ item, index }) => (
-    <View
-      style={[
-        styles.row,
-        index % 2 === 0 ? styles.evenRow : styles.oddRow
-      ]}
-    >
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.phone}>{item.phone}</Text>
+  // 3. Render Item: How each contact row looks
+  const renderItem = ({ item }) => (
+    <View style={styles.itemContainer}>
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{item.name[0]}</Text>
+      </View>
+      <View>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.phone}>{item.phone}</Text>
+      </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>My Contacts</Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Text style={styles.title}>My Contacts</Text>
+        <Text style={styles.subtitle}>
+          Showing {filteredContacts.length} of {contacts.length} contacts
+        </Text>
+      </View>
 
-      <Text style={styles.count}>
-        Showing {filteredContacts.length} of {contacts.length} contacts
-      </Text>
-
+      {/* Search Bar */}
       <TextInput
-        style={styles.input}
-        placeholder="Search contacts..."
+        style={styles.searchBar}
+        placeholder="Search by name..."
         value={query}
-        onChangeText={text => setQuery(text)}
+        onChangeText={text => setQuery(text)} // Updates state as user types
+        clearButtonMode="while-editing"
       />
 
-      {filteredContacts.length === 0 ? (
-        <Text style={styles.noResults}>No contacts found</Text>
-      ) : (
-        <FlatList
-          data={filteredContacts}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-        />
-      )}
-    </View>
+      {/* Main List */}
+      <FlatList
+        data={filteredContacts}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No contacts found for "{query}"</Text>
+        }
+      />
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  header: {
+    padding: 20,
+    backgroundColor: '#FFF',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  searchBar: {
+    height: 50,
+    backgroundColor: '#FFF',
+    margin: 15,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#FFF',
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  avatarText: {
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  phone: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 2,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#F0F0F0',
+    marginLeft: 80, // Offset to align with text, not avatar
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 50,
+    fontSize: 16,
+    color: '#999',
+  },
+});
